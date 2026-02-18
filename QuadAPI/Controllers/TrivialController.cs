@@ -5,6 +5,10 @@ using QuadAPI.Models;
 
 using System.Net.Http;
 
+using System.Collections.Generic;
+
+using System.Text.Json;
+
 
 namespace QuadAPI.Controllers
 {
@@ -28,11 +32,33 @@ namespace QuadAPI.Controllers
         {
             var url = $"https://opentdb.com/api.php?amount={amount}";
             // synchronous call
-            var response = MyHttpClient.GetAsync(url).Result; // block until done
+            var call = MyHttpClient.GetAsync(url).Result; // block until done
 
-            var content = response.Content.ReadAsStringAsync().Result;
+            var content = call.Content.ReadAsStringAsync().Result;
 
-            return Results.Ok(content);
+            OpentdbResponse opentdbresponse = JsonSerializer.Deserialize<OpentdbResponse>(content);
+
+            if (opentdbresponse == null || opentdbresponse.response_code != 0)
+            {
+                return Results.BadRequest("Error fetching questions from OpenTDB API.");
+            }
+
+            List<OpentdbResult> results = opentdbresponse.results;
+            List<QuestionsResponse> questions_response = new List<QuestionsResponse>();
+
+            foreach (OpentdbResult result in results)
+            {
+                questions_response.Add(new QuestionsResponse
+                {
+                    type = result.type,
+                    difficulty = result.difficulty,
+                    category = result.category,
+                    question = result.question
+                });
+            }
+
+
+            return Results.Ok(questions_response);
         }
 
       
