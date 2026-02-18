@@ -47,7 +47,12 @@ namespace QuadAPI.Controllers
 
             var content = call.Content.ReadAsStringAsync().Result;
 
-            OpentdbResponse opentdbresponse = JsonSerializer.Deserialize<OpentdbResponse>(content);
+            if (content == null)
+            {
+                return Results.BadRequest("Error reading response content from OpenTDB API.");
+            }
+
+            OpentdbResponse? opentdbresponse = JsonSerializer.Deserialize<OpentdbResponse>(content);
 
             if (opentdbresponse == null)
             {
@@ -57,6 +62,11 @@ namespace QuadAPI.Controllers
             if (opentdbresponse.response_code != 0)
             {
                 return Results.BadRequest("OpenTDB returned OK200-299 status and response_code: " + opentdbresponse.response_code);
+            }
+
+            if (opentdbresponse.results == null || opentdbresponse.results.Count == 0)
+            {
+                return Results.BadRequest("OpenTDB response does not contain results.");
             }
 
             List<OpentdbResult> results = opentdbresponse.results;
