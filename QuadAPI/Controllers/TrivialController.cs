@@ -18,29 +18,45 @@ namespace QuadAPI.Controllers
     [ApiController]
     public class TrivialController : Controller
     {
-        private readonly HttpClient MyHttpClient;
+        private readonly HttpClient httpclient;
 
         public TrivialController(HttpClient httpClient)
         {
-            MyHttpClient = httpClient;
+            this.httpclient = httpClient;
         }
 
 
         // GET: api/questions?amount=10
         [HttpGet("questions")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public IResult GetQuestions([FromQuery] int amount)
         {
+            if (amount <= 0)
+                return Results.BadRequest("Amount must be greater than 0");
+
             var url = $"https://opentdb.com/api.php?amount={amount}";
-            // synchronous call
-            var call = MyHttpClient.GetAsync(url).Result; // block until done
+
+            var call = httpclient.GetAsync(url).Result;
+
+            if (!call.IsSuccessStatusCode)
+            {
+                return Results.BadRequest("Error fetching questions from OpenTDB API.");
+            }
 
             var content = call.Content.ReadAsStringAsync().Result;
 
             OpentdbResponse opentdbresponse = JsonSerializer.Deserialize<OpentdbResponse>(content);
 
-            if (opentdbresponse == null || opentdbresponse.response_code != 0)
+            if (opentdbresponse == null)
             {
-                return Results.BadRequest("Error fetching questions from OpenTDB API.");
+                return Results.BadRequest("Error deserializing OpenTDB response.");
+            }
+
+            if (opentdbresponse.response_code != 0)
+            {
+                return Results.BadRequest("OpenTDB returned OK200-299 status and response_code: " + opentdbresponse.response_code);
             }
 
             List<OpentdbResult> results = opentdbresponse.results;
