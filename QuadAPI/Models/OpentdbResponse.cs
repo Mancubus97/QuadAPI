@@ -1,8 +1,13 @@
-﻿namespace QuadAPI.Models
+﻿using System.Text.Json.Serialization;
+
+namespace QuadAPI.Models;
+
+public class OpentdbResponse
 {
-    public class OpentdbResponse
-    {
-        public int response_code { get; set; }
-        public List<OpentdbResult>? results { get; set; }
-    }
+
+    [JsonPropertyName("response_code")]
+    public int ResponseCode { get; set; }
+
+    [JsonPropertyName("results")]
+    public List<OpentdbResult>? Results { get; set; }
 }

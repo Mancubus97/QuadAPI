@@ -1,10 +1,9 @@
-﻿namespace QuadAPI.Models
+﻿namespace QuadAPI.Models;
+
+public class QuestionsResponse
 {
-    public class QuestionsResponse
-    {
-        public string type { get; set; }
-        public string difficulty { get; set; }
-        public string category { get; set; }
-        public string question { get; set; }
-    }
+    public string Type { get; set; }
+    public string Difficulty { get; set; }
+    public string Category { get; set; }
+    public string Question { get; set; }
 }

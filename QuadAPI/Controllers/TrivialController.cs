@@ -1,105 +1,96 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 
 using QuadAPI.Models;
 
-using System.Net.Http;
-
-using System.Collections.Generic;
-
 using System.Text.Json;
 
+namespace QuadAPI.Controllers;
 
-namespace QuadAPI.Controllers
+[Route("api")]
+[ApiController]
+public class TrivialController : Controller
 {
+    private readonly HttpClient httpClient;
 
+    static private readonly Dictionary<string, string> correctAnswers = [];
 
-    [Route("api")]
-    [ApiController]
-    public class TrivialController : Controller
+    public TrivialController(HttpClient httpClient)
     {
-        private readonly HttpClient httpclient;
+        this.httpClient = httpClient;
+    }
 
-        public TrivialController(HttpClient httpClient)
+
+    // GET: api/questions?amount=10
+    [HttpGet("questions")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<IResult> GetQuestions([FromQuery] int amount)
+    {
+        if (amount <= 0)
+            return Results.BadRequest("Amount must be greater than 0");
+
+        var url = $"https://opentdb.com/api.php?amount={amount}";
+
+        var call = await httpClient.GetAsync(url);
+
+        if (!call.IsSuccessStatusCode)
         {
-            this.httpclient = httpClient;
+            return Results.BadRequest("Error fetching questions from OpenTDB API.");
+        }
+
+        var content = await call.Content.ReadAsStringAsync();
+
+        if (content == null)
+        {
+            return Results.BadRequest("Error reading response content from OpenTDB API.");
+        }
+
+        OpentdbResponse? opentdbresponse = JsonSerializer.Deserialize<OpentdbResponse>(content);
+
+        if (opentdbresponse == null)
+        {
+            return Results.BadRequest("Error deserializing OpenTDB response.");
+        }
+
+        if (opentdbresponse.ResponseCode != 0)
+        {
+            return Results.BadRequest("OpenTDB responded with response_code: " + opentdbresponse.ResponseCode);
+        }
+
+        if (opentdbresponse.Results == null || opentdbresponse.Results.Count == 0)
+        {
+            return Results.BadRequest("OpenTDB response does not contain results.");
+        }
+
+        List<OpentdbResult> results = opentdbresponse.Results;
+        List<QuestionsResponse> questions_response = new List<QuestionsResponse>(); // Naam?
+
+        foreach (OpentdbResult result in results)
+        {
+            correctAnswers.Add(result.Question, result.CorrectAnswer);
+            questions_response.Add(new QuestionsResponse
+            {
+                Type = result.Type,
+                Difficulty = result.Difficulty,
+                Category = result.Category,
+                Question = result.Question
+            });
         }
 
 
-        // GET: api/questions?amount=10
-        [HttpGet("questions")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public IResult GetQuestions([FromQuery] int amount)
+        return Results.Ok(questions_response);
+    }
+
+    [HttpPost("checkanswers")]
+    public async Task<IResult> CheckAnswers([FromBody] List<AnswerUser> answers)
+    {
+        foreach(AnswerUser answer in answers)
         {
-            if (amount <= 0)
-                return Results.BadRequest("Amount must be greater than 0");
-
-            var url = $"https://opentdb.com/api.php?amount={amount}";
-
-            var call = httpclient.GetAsync(url).Result;
-
-            if (!call.IsSuccessStatusCode)
-            {
-                return Results.BadRequest("Error fetching questions from OpenTDB API.");
-            }
-
-            var content = call.Content.ReadAsStringAsync().Result;
-
-            if (content == null)
-            {
-                return Results.BadRequest("Error reading response content from OpenTDB API.");
-            }
-
-            OpentdbResponse? opentdbresponse = JsonSerializer.Deserialize<OpentdbResponse>(content);
-
-            if (opentdbresponse == null)
-            {
-                return Results.BadRequest("Error deserializing OpenTDB response.");
-            }
-
-            if (opentdbresponse.response_code != 0)
-            {
-                return Results.BadRequest("OpenTDB returned OK200-299 status and response_code: " + opentdbresponse.response_code);
-            }
-
-            if (opentdbresponse.results == null || opentdbresponse.results.Count == 0)
-            {
-                return Results.BadRequest("OpenTDB response does not contain results.");
-            }
-
-            List<OpentdbResult> results = opentdbresponse.results;
-            List<QuestionsResponse> questions_response = new List<QuestionsResponse>();
-
-            foreach (OpentdbResult result in results)
-            {
-                questions_response.Add(new QuestionsResponse
-                {
-                    type = result.type,
-                    difficulty = result.difficulty,
-                    category = result.category,
-                    question = result.question
-                });
-            }
-
-
-            return Results.Ok(questions_response);
+            Console.WriteLine(answer.Question);
+            Console.WriteLine(answer.Answer);
         }
-
-      
-        //[HttpPost]
-        //[ValidateAntiForgeryToken]
-        //public ActionResult Delete(int id, IFormCollection collection)
-        //{
-        //    try
-        //    {
-        //        return RedirectToAction(nameof(Index));
-        //    }
-        //    catch
-        //    {
-        //        return View();
-        //    }
-        //}
+        return Results.Ok(correctAnswers);
     }
 }
+

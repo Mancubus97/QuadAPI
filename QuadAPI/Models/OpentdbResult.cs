@@ -1,12 +1,24 @@
-﻿namespace QuadAPI.Models
+﻿using System.Text.Json.Serialization;
+
+namespace QuadAPI.Models;
+
+public class OpentdbResult
 {
-    public class OpentdbResult
-    {
-        public string type { get; set; }
-        public string difficulty { get; set; }
-        public string category { get; set; }
-        public string question { get; set; }
-        public string correct_answer { get; set; }
-        public List<string> incorrect_answers { get; set; }
-    }
+    [JsonPropertyName("type")]
+    public string Type { get; set; }
+
+    [JsonPropertyName("difficulty")]
+    public string Difficulty { get; set; }
+
+    [JsonPropertyName("category")]
+    public string Category { get; set; }
+
+    [JsonPropertyName("question")]
+    public string Question { get; set; }
+
+    [JsonPropertyName("correct_answer")]
+    public string CorrectAnswer { get; set; }
+
+    [JsonPropertyName("incorrect_answers")]
+    public List<string> IncorrectAnswers { get; set; }
 }
