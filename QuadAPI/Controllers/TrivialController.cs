@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc;
 
 using QuadAPI.Models;
 
@@ -64,7 +65,7 @@ public class TrivialController : Controller
         }
 
         List<OpentdbResult> results = opentdbresponse.Results;
-        List<QuestionsResponse> questions_response = new List<QuestionsResponse>(); // Naam?
+        List<QuestionsResponse> questions_response = new List<QuestionsResponse>();
 
         foreach (OpentdbResult result in results)
         {
@@ -76,21 +77,48 @@ public class TrivialController : Controller
                 Category = result.Category,
                 Question = result.Question
             });
-        }
+        } 
 
 
         return Results.Ok(questions_response);
     }
 
     [HttpPost("checkanswers")]
-    public async Task<IResult> CheckAnswers([FromBody] List<AnswerUser> answers)
+    public async Task<IResult> CheckAnswers([FromBody] List<AnswerUserRequest> requests)
     {
-        foreach(AnswerUser answer in answers)
+        foreach (string answer in correctAnswers.Values)
         {
-            Console.WriteLine(answer.Question);
-            Console.WriteLine(answer.Answer);
+            Console.WriteLine(answer);
         }
-        return Results.Ok(correctAnswers);
+        List<AnswerUserResponse> res = [];
+        //var correct_answers = requests.Select(request => correctAnswers[request.Question] == request.Answer);
+
+        var results = requests.Select(request =>
+        {
+            var isCorrect = correctAnswers.TryGetValue(request.Question, out var answer) && answer.Equals(request.Answer);
+            return new AnswerUserResponse(request.Question, isCorrect);
+        });
+        //foreach(AnswerUserRequest answer in answers)
+        //{
+        //    foreach (var correctAnswer in correctAnswers)
+        //    {
+        //        if (correctAnswer.Key == answer.Question)
+        //        {
+        //            if (correctAnswer.Value == answer.Answer)
+        //            {
+        //                Console.WriteLine("Correct!");
+        //            }
+        //            else
+        //            {
+        //                Console.WriteLine("Incorrect!");
+        //            }
+        //        }
+        //    }
+        //    Console.WriteLine(answer.Question);
+        //    Console.WriteLine(answer.Answer);
+        //}
+
+        return Results.Ok(results);
     }
 }
 
