@@ -69,16 +69,35 @@ public class TrivialController : Controller
 
         foreach (OpentdbResult result in results)
         {
+            List<string> answers = new List<string>();
+            answers.Add(result.CorrectAnswer);
+            answers.AddRange(result.IncorrectAnswers);
+            // Shuffle the answers
+            List<string> answersShuffled = new List<string>();
+            Random random = new Random();
+            while (answers.Count > 0)
+            {
+                int index = random.Next(answers.Count);
+                answersShuffled.Add(answers[index]);
+                answers.RemoveAt(index);
+            }
+
             correctAnswers.Add(result.Question, result.CorrectAnswer);
             questions_response.Add(new QuestionsResponse
             {
                 Type = result.Type,
                 Difficulty = result.Difficulty,
                 Category = result.Category,
-                Question = result.Question
+                Question = result.Question,
+                Answers = answersShuffled
             });
-        } 
+        }
 
+        //DEBUG
+        //foreach (string answer in correctAnswers.Values)
+        //{
+        //    Console.WriteLine(answer);
+        //}
 
         return Results.Ok(questions_response);
     }
@@ -86,10 +105,6 @@ public class TrivialController : Controller
     [HttpPost("checkanswers")]
     public async Task<IResult> CheckAnswers([FromBody] List<AnswerUserRequest> requests)
     {
-        foreach (string answer in correctAnswers.Values)
-        {
-            Console.WriteLine(answer);
-        }
         List<AnswerUserResponse> res = [];
         //var correct_answers = requests.Select(request => correctAnswers[request.Question] == request.Answer);
 
