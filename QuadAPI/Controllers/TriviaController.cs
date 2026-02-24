@@ -9,16 +9,11 @@ namespace QuadAPI.Controllers;
 
 [Route("api")]
 [ApiController]
-public class TrivialController : Controller
+public class TriviaController(HttpClient httpClient) : Controller
 {
-    private readonly HttpClient httpClient;
+    private readonly HttpClient httpClient = httpClient;
 
     static private readonly Dictionary<string, string> correctAnswers = [];
-
-    public TrivialController(HttpClient httpClient)
-    {
-        this.httpClient = httpClient;
-    }
 
 
     // GET: api/questions?amount=10
@@ -93,12 +88,6 @@ public class TrivialController : Controller
             });
         }
 
-        //DEBUG
-        //foreach (string answer in correctAnswers.Values)
-        //{
-        //    Console.WriteLine(answer);
-        //}
-
         return Results.Ok(questions_response);
     }
 
@@ -106,32 +95,12 @@ public class TrivialController : Controller
     public async Task<IResult> CheckAnswers([FromBody] List<AnswerUserRequest> requests)
     {
         List<AnswerUserResponse> res = [];
-        //var correct_answers = requests.Select(request => correctAnswers[request.Question] == request.Answer);
 
         var results = requests.Select(request =>
         {
             var isCorrect = correctAnswers.TryGetValue(request.Question, out var answer) && answer.Equals(request.Answer);
             return new AnswerUserResponse(request.Question, isCorrect);
         });
-        //foreach(AnswerUserRequest answer in answers)
-        //{
-        //    foreach (var correctAnswer in correctAnswers)
-        //    {
-        //        if (correctAnswer.Key == answer.Question)
-        //        {
-        //            if (correctAnswer.Value == answer.Answer)
-        //            {
-        //                Console.WriteLine("Correct!");
-        //            }
-        //            else
-        //            {
-        //                Console.WriteLine("Incorrect!");
-        //            }
-        //        }
-        //    }
-        //    Console.WriteLine(answer.Question);
-        //    Console.WriteLine(answer.Answer);
-        //}
 
         return Results.Ok(results);
     }
