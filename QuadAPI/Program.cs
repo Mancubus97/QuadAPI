@@ -1,5 +1,4 @@
 using QuadAPI.Services;
-using Swashbuckle.AspNetCore.SwaggerGen; // brings AddSwaggerGen extension into scope
 
 var builder = WebApplication.CreateBuilder(args);
 

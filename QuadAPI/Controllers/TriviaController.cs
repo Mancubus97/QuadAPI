@@ -19,9 +19,9 @@ public class TriviaController(ITriviaControllerService service) : Controller
 
     // GET: api/questions?amount=10
     [HttpGet("questions")]
-    //[ProducesResponseType(StatusCodes.Status200OK)]
-    //[ProducesResponseType(StatusCodes.Status400BadRequest)]
-    //[ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IResult> GetQuestions([FromQuery] int amount)
         => Results.Ok(await _service.GetQuestions(amount));
 
