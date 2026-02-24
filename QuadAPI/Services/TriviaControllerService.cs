@@ -32,8 +32,14 @@ namespace QuadAPI.Services
                 throw new Exception("Error reading response content from OpenTDB API.");
             }
 
+            OpentdbResponse? opentdbresponse = JsonSerializer.Deserialize<OpentdbResponse>(content);
 
-            return JsonSerializer.Deserialize<OpentdbResponse>(content);
+            if (opentdbresponse == null)
+            {
+                throw new Exception("Error deserializing OpenTDB response.");
+            }
+
+            return opentdbresponse;
         }
 
         public async Task<List<QuestionsResponse>> GenerateResponse(List<OpentdbResult> results)
@@ -72,12 +78,7 @@ namespace QuadAPI.Services
         public async Task<IEnumerable<QuestionsResponse>> GetQuestions(int amount)
         {
 
-            OpentdbResponse? opentdbresponse = await GetResponseFromOpenTDB(amount);
-
-            if (opentdbresponse == null)
-            {
-                throw new Exception("Error deserializing OpenTDB response.");
-            }
+            OpentdbResponse opentdbresponse = await GetResponseFromOpenTDB(amount);
 
             if (opentdbresponse.ResponseCode != 0)
             {
