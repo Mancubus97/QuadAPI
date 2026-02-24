@@ -1,19 +1,8 @@
 import { useState, useCallback } from "react";
 import Question from "../types/Question";
-
-type TriviaPageProps = {
-  questions: Array<Question>;
-};
-
-type SelectedAnswer = {
-  question: string;
-  answer: string;
-};
-
-type CheckedAnswer = {
-  question: string;
-  isCorrect: boolean;
-};
+import TriviaPageProps from "../types/TriviaPageProps";
+import SelectedAnswer from "../types/SelectedAnswer";
+import CheckedAnswer from "../types/CheckedAnswer";
 
 function TriviaPage({ questions }: TriviaPageProps) {
   const [selectedAnswers, setSelectedAnswers] = useState<SelectedAnswer[]>([]);
