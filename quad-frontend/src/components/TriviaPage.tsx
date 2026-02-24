@@ -1,5 +1,4 @@
 import { useState, useCallback } from "react";
-import Question from "../types/Question";
 import TriviaPageProps from "../types/TriviaPageProps";
 import SelectedAnswer from "../types/SelectedAnswer";
 import CheckedAnswer from "../types/CheckedAnswer";
@@ -9,7 +8,6 @@ function TriviaPage({ questions }: TriviaPageProps) {
   const [checkedAnswers, setCheckedAnswers] = useState<CheckedAnswer[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
-  // When user clicks an answer
   const handleAnswerClick = (question: string, answer: string) => {
     setSelectedAnswers((prev) => {
       const filtered = prev.filter((q) => q.question !== question);
@@ -54,6 +52,7 @@ function TriviaPage({ questions }: TriviaPageProps) {
     return selectedAnswers.find((q) => q.question === question)?.answer;
   };
 
+  
   return (
     <div>
       {questions.map((question, index) => {

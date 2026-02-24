@@ -1,6 +1,5 @@
 import React from 'react';
-import { useEffect, useState, useCallback } from 'react';
-import logo from './logo.svg';
+import { useState, useCallback } from 'react';
 import './App.css';
 import TriviaPage from './components/TriviaPage';
 import Question from './types/Question';
@@ -11,11 +10,13 @@ import Question from './types/Question';
 function App() {
   const [isLoading, setIsLoading] = useState<boolean>(false); // State to store an boolean to indicate if the data is loading
   const [questions, setQuestions] = useState<Array<Question>>([]); // State to store the questions data
+  const [amount, setAmount] = useState<number>(10);
 
-   const fetchQuestions = useCallback(async () => {
+
+   const fetchQuestions = async () => {
     setIsLoading(true);
     try {
-      const apiUrl = `http://localhost:5157/api/questions?amount=10`;
+      const apiUrl = `http://localhost:5157/api/questions?amount=${amount}`;
 
       const response = await fetch(apiUrl);
 
@@ -25,14 +26,13 @@ function App() {
 
       const result = await response.json();
 
-      // Set the fetched array of plants as the new state
       setQuestions(result);
     } catch (error) {
       console.error('Error fetching data:', error);
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  };
 
   return (
     <div className="App">
@@ -40,7 +40,14 @@ function App() {
         <div>Loading...</div>
       ) : (
         <div>
+          <input
+          type="number"
+          min="1"
+          value={amount}
+          onChange={(e) => setAmount(Number(e.target.value))}/>
+
           <button onClick={fetchQuestions}>Get Questions</button>
+
           <TriviaPage questions={questions}/>
         </div>
       )}
