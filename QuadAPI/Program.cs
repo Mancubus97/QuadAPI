@@ -1,3 +1,4 @@
+using QuadAPI.Services;
 using Swashbuckle.AspNetCore.SwaggerGen; // brings AddSwaggerGen extension into scope
 
 var builder = WebApplication.CreateBuilder(args);
@@ -12,6 +13,8 @@ builder.Services.AddCors(options =>
                   .AllowAnyMethod();
         });
 });
+
+builder.Services.AddScoped<ITriviaControllerService, TriviaControllerService>();
 
 builder.Services.AddControllers();
 
