@@ -1,9 +1,6 @@
-﻿using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 
 using QuadAPI.Models;
-
-using System.Text.Json;
 
 using QuadAPI.Services;
 
@@ -15,7 +12,6 @@ public class TriviaController(ITriviaControllerService service) : Controller
 {
 
     private readonly ITriviaControllerService _service = service;
-
 
     // GET: api/questions?amount=10
     [HttpGet("questions")]

@@ -1,5 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using QuadAPI.Models;
+﻿using QuadAPI.Models;
+using System.ComponentModel;
 using System.Text.Json;
 
 namespace QuadAPI.Services
@@ -12,13 +12,12 @@ namespace QuadAPI.Services
 
         static private readonly Dictionary<string, string> correctAnswers = [];
 
-        public async Task<IEnumerable<QuestionsResponse>> GetQuestions(int amount)
+        public async Task<OpentdbResponse> GetResponseFromOpenTDB(int amount)
         {
             if (amount <= 0)
                 throw new ArgumentException("Amount must be greater than 0");
 
             var url = $"https://opentdb.com/api.php?amount={amount}";
-
             var call = await httpClient.GetAsync(url);
 
             if (!call.IsSuccessStatusCode)
@@ -33,25 +32,13 @@ namespace QuadAPI.Services
                 throw new Exception("Error reading response content from OpenTDB API.");
             }
 
-            OpentdbResponse? opentdbresponse = JsonSerializer.Deserialize<OpentdbResponse>(content);
 
-            if (opentdbresponse == null)
-            {
-                throw new Exception("Error deserializing OpenTDB response.");
-            }
+            return JsonSerializer.Deserialize<OpentdbResponse>(content);
+        }
 
-            if (opentdbresponse.ResponseCode != 0)
-            {
-                throw new Exception("OpenTDB responded with response_code: " + opentdbresponse.ResponseCode);
-            }
-
-            if (opentdbresponse.Results == null || opentdbresponse.Results.Count == 0)
-            {
-                throw new Exception("OpenTDB response does not contain results.");
-            }
-
-            List<OpentdbResult> results = opentdbresponse.Results;
-            List<QuestionsResponse> questions_response = new List<QuestionsResponse>();
+        public async Task<List<QuestionsResponse>> GenerateResponse(List<OpentdbResult> results)
+        {
+            List<QuestionsResponse> res = new List<QuestionsResponse>();
 
             foreach (OpentdbResult result in results)
             {
@@ -69,7 +56,7 @@ namespace QuadAPI.Services
                 }
 
                 correctAnswers.Add(result.Question, result.CorrectAnswer);
-                questions_response.Add(new QuestionsResponse
+                res.Add(new QuestionsResponse
                 {
                     Type = result.Type,
                     Difficulty = result.Difficulty,
@@ -78,6 +65,32 @@ namespace QuadAPI.Services
                     Answers = answersShuffled
                 });
             }
+
+            return res;
+        }
+
+        public async Task<IEnumerable<QuestionsResponse>> GetQuestions(int amount)
+        {
+
+            OpentdbResponse? opentdbresponse = await GetResponseFromOpenTDB(amount);
+
+            if (opentdbresponse == null)
+            {
+                throw new Exception("Error deserializing OpenTDB response.");
+            }
+
+            if (opentdbresponse.ResponseCode != 0)
+            {
+                throw new Exception("OpenTDB responded with response_code: " + opentdbresponse.ResponseCode);
+            }
+
+            if (opentdbresponse.Results == null || opentdbresponse.Results.Count == 0)
+            {
+                throw new Exception("OpenTDB response does not contain results.");
+            }
+
+            List<QuestionsResponse> questions_response = await GenerateResponse(opentdbresponse.Results);
+
 
             return questions_response;
         }

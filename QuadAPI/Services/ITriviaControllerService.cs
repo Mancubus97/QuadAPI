@@ -1,5 +1,4 @@
 ﻿using QuadAPI.Models;
-using System.Collections;
 
 namespace QuadAPI.Services
 {
@@ -11,4 +10,3 @@ namespace QuadAPI.Services
         Task<IEnumerable<AnswerUserResponse>> CheckAnswers(List<AnswerUserRequest> requests);
     }
 }
- 
