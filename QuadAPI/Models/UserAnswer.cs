@@ -1,6 +1,6 @@
 ﻿namespace QuadAPI.Models
 {
-    public class AnswerUserRequest
+    public class UserAnswer
     {
         public string Question { get; set; }
         public string Answer { get; set; }

@@ -25,11 +25,9 @@ builder.Services.AddHttpClient();
 
 builder.Services.AddSwaggerGen(options =>
 {
-    // ResolveConflictingActions is a member on SwaggerGen options
     options.ResolveConflictingActions(apiDescriptions => apiDescriptions.First());
 });
 
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddSwaggerGen();

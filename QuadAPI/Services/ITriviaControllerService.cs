@@ -12,6 +12,6 @@ namespace QuadAPI.Services
 
         Task<IEnumerable<AnswerUserResponse>> CheckAnswers(
             string quizId,
-            List<AnswerUserRequest> requests);
+            List<UserAnswer> requests);
     }
 }

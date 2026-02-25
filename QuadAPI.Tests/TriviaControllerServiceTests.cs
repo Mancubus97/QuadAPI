@@ -156,9 +156,9 @@ public class TriviaControllerServiceTests
         var questions = await service.GenerateResponse(results);
         var quizId = questions.First().QuizId;
 
-        var requests = new List<AnswerUserRequest>
+        var requests = new List<UserAnswer>
         {
-            new AnswerUserRequest
+            new UserAnswer
             {
                 Question = "Q1",
                 Answer = "Correct"

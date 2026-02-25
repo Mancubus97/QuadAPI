@@ -20,8 +20,6 @@ public class TriviaController(ITriviaControllerService service) : Controller
 
     [HttpPost("checkanswers")]
     public async Task<IResult> CheckAnswers([FromBody] CheckAnswersRequest request)
-    {
-        var result = await service.CheckAnswers(request.QuizId, request.Answers);
-        return Results.Ok(result);
-    }
+        => Results.Ok(await service.CheckAnswers(request.QuizId, request.Answers));
+
 }

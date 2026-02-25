@@ -8,8 +8,6 @@ namespace QuadAPI.Services
         HttpClient httpClient,
         IMemoryCache cache) : ITriviaControllerService
     {
-        private readonly HttpClient httpClient = httpClient;
-        private readonly IMemoryCache cache = cache;
         public async Task<OpentdbResponse> GetResponseFromOpenTDB(int amount)
         {
             if (amount <= 0)
@@ -74,7 +72,9 @@ namespace QuadAPI.Services
                     Answers = answersShuffled
                 });
             }
+
             cache.Set(quizId, answerDictionary, TimeSpan.FromMinutes(10));
+
             return res;
         }
 
@@ -95,16 +95,16 @@ namespace QuadAPI.Services
 
             List<QuestionsResponse> questionsResponse = await GenerateResponse(opentdbResponse.Results);
 
-
             return questionsResponse;
         }
 
         public async Task<IEnumerable<AnswerUserResponse>> CheckAnswers(
             string quizId,
-            List<AnswerUserRequest> requests)
+            List<UserAnswer> requests)
         {
-            if (!cache.TryGetValue(quizId, out Dictionary<string, string>? answers))
+            if (!cache.TryGetValue(quizId, out Dictionary<string, string>? answers) || answers == null)
                 throw new Exception("Quiz expired or invalid.");
+
 
             var results = requests.Select(r =>
             {
