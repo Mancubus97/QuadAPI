@@ -1,17 +1,13 @@
 ﻿using QuadAPI.Models;
-using System.ComponentModel;
 using System.Text.Json;
 
 namespace QuadAPI.Services
 {
     public class TriviaControllerService(HttpClient httpClient) : ITriviaControllerService
     {
-
-
         private readonly HttpClient httpClient = httpClient;
 
-        static private readonly Dictionary<string, string> correctAnswers = [];
-
+        private readonly Dictionary<string, string> correctAnswers = new();
         public async Task<OpentdbResponse> GetResponseFromOpenTDB(int amount)
         {
             if (amount <= 0)
@@ -78,22 +74,22 @@ namespace QuadAPI.Services
         public async Task<IEnumerable<QuestionsResponse>> GetQuestions(int amount)
         {
 
-            OpentdbResponse opentdbresponse = await GetResponseFromOpenTDB(amount);
+            OpentdbResponse opentdbResponse = await GetResponseFromOpenTDB(amount);
 
-            if (opentdbresponse.ResponseCode != 0)
+            if (opentdbResponse.ResponseCode != 0)
             {
-                throw new Exception("OpenTDB responded with response_code: " + opentdbresponse.ResponseCode);
+                throw new Exception("OpenTDB responded with response_code: " + opentdbResponse.ResponseCode);
             }
 
-            if (opentdbresponse.Results == null || opentdbresponse.Results.Count == 0)
+            if (opentdbResponse.Results == null || opentdbResponse.Results.Count == 0)
             {
                 throw new Exception("OpenTDB response does not contain results.");
             }
 
-            List<QuestionsResponse> questions_response = await GenerateResponse(opentdbresponse.Results);
+            List<QuestionsResponse> questionsResponse = await GenerateResponse(opentdbResponse.Results);
 
 
-            return questions_response;
+            return questionsResponse;
         }
 
         public async Task<IEnumerable<AnswerUserResponse>> CheckAnswers(List<AnswerUserRequest> requests)

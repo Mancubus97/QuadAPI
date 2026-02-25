@@ -40,6 +40,7 @@ function App() {
         <div>Loading...</div>
       ) : (
         <div>
+          Set Question Amount:
           <input
           type="number"
           min="1"
@@ -55,5 +56,4 @@ function App() {
   );
 }
 
-export type { Question };
 export default App;
