@@ -11,6 +11,7 @@ function App() {
   const [isLoading, setIsLoading] = useState<boolean>(false); // State to store an boolean to indicate if the data is loading
   const [questions, setQuestions] = useState<Array<Question>>([]); // State to store the questions data
   const [amount, setAmount] = useState<number>(10);
+    const [quizId, setQuizId] = useState<string | null>(null);
 
 
    const fetchQuestions = async () => {
@@ -27,6 +28,13 @@ function App() {
       const result = await response.json();
 
       setQuestions(result);
+
+      
+      // Grab quizId from first question
+      if (result.length > 0) {
+        setQuizId(result[0].quizId);
+      }
+
     } catch (error) {
       console.error('Error fetching data:', error);
     } finally {
@@ -49,8 +57,10 @@ function App() {
 
           <button onClick={fetchQuestions}>Get Questions</button>
 
-          <TriviaPage questions={questions}/>
-        </div>
+          <TriviaPage 
+            questions={questions}
+            quizId={quizId}
+          />        </div>
       )}
     </div>
   );

@@ -13,6 +13,8 @@ builder.Services.AddCors(options =>
         });
 });
 
+builder.Services.AddMemoryCache();
+
 builder.Services.AddScoped<ITriviaControllerService, TriviaControllerService>();
 
 builder.Services.AddControllers();

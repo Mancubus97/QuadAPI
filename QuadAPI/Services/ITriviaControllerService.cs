@@ -10,6 +10,8 @@ namespace QuadAPI.Services
 
         Task<IEnumerable<QuestionsResponse>> GetQuestions(int amount);
 
-        Task<IEnumerable<AnswerUserResponse>> CheckAnswers(List<AnswerUserRequest> requests);
+        Task<IEnumerable<AnswerUserResponse>> CheckAnswers(
+            string quizId,
+            List<AnswerUserRequest> requests);
     }
 }

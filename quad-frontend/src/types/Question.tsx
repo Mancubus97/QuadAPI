@@ -1,4 +1,5 @@
 type Question = {
+  quizId: number;
   category: string;
   type: string;
   difficulty: string;

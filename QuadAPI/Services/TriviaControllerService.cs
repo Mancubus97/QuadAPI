@@ -1,13 +1,15 @@
 ﻿using QuadAPI.Models;
 using System.Text.Json;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace QuadAPI.Services
 {
-    public class TriviaControllerService(HttpClient httpClient) : ITriviaControllerService
+    public class TriviaControllerService(
+        HttpClient httpClient,
+        IMemoryCache cache) : ITriviaControllerService
     {
         private readonly HttpClient httpClient = httpClient;
-
-        private readonly Dictionary<string, string> correctAnswers = new();
+        private readonly IMemoryCache cache = cache;
         public async Task<OpentdbResponse> GetResponseFromOpenTDB(int amount)
         {
             if (amount <= 0)
@@ -40,10 +42,15 @@ namespace QuadAPI.Services
 
         public async Task<List<QuestionsResponse>> GenerateResponse(List<OpentdbResult> results)
         {
+            var quizId = Guid.NewGuid().ToString();
+            var answerDictionary = new Dictionary<string, string>();
+
             List<QuestionsResponse> res = new List<QuestionsResponse>();
 
             foreach (OpentdbResult result in results)
             {
+                answerDictionary[result.Question] = result.CorrectAnswer;
+
                 List<string> answers = new List<string>();
                 answers.Add(result.CorrectAnswer);
                 answers.AddRange(result.IncorrectAnswers);
@@ -57,17 +64,17 @@ namespace QuadAPI.Services
                     answers.RemoveAt(index);
                 }
 
-                correctAnswers.Add(result.Question, result.CorrectAnswer);
                 res.Add(new QuestionsResponse
                 {
-                    Type = result.Type,
-                    Difficulty = result.Difficulty,
-                    Category = result.Category,
+                    QuizId = quizId,
                     Question = result.Question,
+                    Category = result.Category,
+                    Difficulty = result.Difficulty,
+                    Type = result.Type,
                     Answers = answersShuffled
                 });
             }
-
+            cache.Set(quizId, answerDictionary, TimeSpan.FromMinutes(10));
             return res;
         }
 
@@ -92,14 +99,19 @@ namespace QuadAPI.Services
             return questionsResponse;
         }
 
-        public async Task<IEnumerable<AnswerUserResponse>> CheckAnswers(List<AnswerUserRequest> requests)
+        public async Task<IEnumerable<AnswerUserResponse>> CheckAnswers(
+            string quizId,
+            List<AnswerUserRequest> requests)
         {
-            List<AnswerUserResponse> res = [];
+            if (!cache.TryGetValue(quizId, out Dictionary<string, string>? answers))
+                throw new Exception("Quiz expired or invalid.");
 
-            var results = requests.Select(request =>
+            var results = requests.Select(r =>
             {
-                var isCorrect = correctAnswers.TryGetValue(request.Question, out var answer) && answer.Equals(request.Answer);
-                return new AnswerUserResponse(request.Question, isCorrect);
+                var isCorrect = answers.TryGetValue(r.Question, out var correct)
+                                && correct == r.Answer;
+
+                return new AnswerUserResponse(r.Question, isCorrect);
             });
 
             return results;

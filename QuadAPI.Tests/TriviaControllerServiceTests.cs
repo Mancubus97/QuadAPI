@@ -3,6 +3,7 @@ using Moq;
 using Moq.Protected;
 using QuadAPI.Models;
 using QuadAPI.Services;
+using Microsoft.Extensions.Caching.Memory;
 using System.Net;
 using System.Net.Http;
 using System.Text;
@@ -31,6 +32,11 @@ public class TriviaControllerServiceTests
         return new HttpClient(handlerMock.Object);
     }
 
+    private IMemoryCache CreateMemoryCache()
+    {
+        return new MemoryCache(new MemoryCacheOptions());
+    }
+
     [Fact]
     public async Task GetResponseFromOpenTDB_ShouldReturnResponse_WhenApiCallIsSuccessful()
     {
@@ -53,7 +59,9 @@ public class TriviaControllerServiceTests
 
         var json = JsonSerializer.Serialize(fakeResponse);
         var httpClient = CreateMockHttpClient(json, HttpStatusCode.OK);
-        var service = new TriviaControllerService(httpClient);
+        var cache = CreateMemoryCache();
+
+        var service = new TriviaControllerService(httpClient, cache);
 
         var result = await service.GetResponseFromOpenTDB(1);
 
@@ -66,7 +74,9 @@ public class TriviaControllerServiceTests
     public async Task GetResponseFromOpenTDB_ShouldThrow_WhenAmountIsZero()
     {
         var httpClient = CreateMockHttpClient("", HttpStatusCode.OK);
-        var service = new TriviaControllerService(httpClient);
+        var cache = CreateMemoryCache();
+
+        var service = new TriviaControllerService(httpClient, cache);
 
         await Assert.ThrowsAsync<ArgumentException>(() =>
             service.GetResponseFromOpenTDB(0));
@@ -83,7 +93,9 @@ public class TriviaControllerServiceTests
 
         var json = JsonSerializer.Serialize(fakeResponse);
         var httpClient = CreateMockHttpClient(json, HttpStatusCode.OK);
-        var service = new TriviaControllerService(httpClient);
+        var cache = CreateMemoryCache();
+
+        var service = new TriviaControllerService(httpClient, cache);
 
         await Assert.ThrowsAsync<Exception>(() =>
             service.GetQuestions(1));
@@ -92,7 +104,10 @@ public class TriviaControllerServiceTests
     [Fact]
     public async Task GenerateResponse_ShouldIncludeAllAnswers()
     {
-        var service = new TriviaControllerService(new HttpClient());
+        var httpClient = new HttpClient();
+        var cache = CreateMemoryCache();
+
+        var service = new TriviaControllerService(httpClient, cache);
 
         var results = new List<OpentdbResult>
         {
@@ -114,12 +129,16 @@ public class TriviaControllerServiceTests
         response.First().Answers.Should().Contain("Correct");
         response.First().Answers.Should().Contain("Wrong1");
         response.First().Answers.Should().Contain("Wrong2");
+        response.First().QuizId.Should().NotBeNullOrEmpty();
     }
 
     [Fact]
     public async Task CheckAnswers_ShouldReturnTrue_WhenAnswerIsCorrect()
     {
-        var service = new TriviaControllerService(new HttpClient());
+        var httpClient = new HttpClient();
+        var cache = CreateMemoryCache();
+
+        var service = new TriviaControllerService(httpClient, cache);
 
         var results = new List<OpentdbResult>
         {
@@ -134,7 +153,8 @@ public class TriviaControllerServiceTests
             }
         };
 
-        await service.GenerateResponse(results);
+        var questions = await service.GenerateResponse(results);
+        var quizId = questions.First().QuizId;
 
         var requests = new List<AnswerUserRequest>
         {
@@ -145,7 +165,7 @@ public class TriviaControllerServiceTests
             }
         };
 
-        var response = await service.CheckAnswers(requests);
+        var response = await service.CheckAnswers(quizId, requests);
 
         response.First().IsCorrect.Should().BeTrue();
     }

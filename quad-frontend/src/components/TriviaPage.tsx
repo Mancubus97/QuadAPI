@@ -3,7 +3,7 @@ import TriviaPageProps from "../types/TriviaPageProps";
 import SelectedAnswer from "../types/SelectedAnswer";
 import CheckedAnswer from "../types/CheckedAnswer";
 
-function TriviaPage({ questions }: TriviaPageProps) {
+function TriviaPage({ quizId, questions }: TriviaPageProps) {
   const [selectedAnswers, setSelectedAnswers] = useState<SelectedAnswer[]>([]);
   const [checkedAnswers, setCheckedAnswers] = useState<CheckedAnswer[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -11,12 +11,16 @@ function TriviaPage({ questions }: TriviaPageProps) {
   const handleAnswerClick = (question: string, answer: string) => {
     setSelectedAnswers((prev) => {
       const filtered = prev.filter((q) => q.question !== question);
-
       return [...filtered, { question, answer }];
     });
   };
 
   const checkAnswers = useCallback(async () => {
+    if (!quizId) {
+      alert("Quiz not loaded yet.");
+      return;
+    }
+
     setIsLoading(true);
 
     try {
@@ -27,7 +31,10 @@ function TriviaPage({ questions }: TriviaPageProps) {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify(selectedAnswers),
+          body: JSON.stringify({
+            quizId: quizId,
+            answers: selectedAnswers
+          }),
         }
       );
 
@@ -38,11 +45,11 @@ function TriviaPage({ questions }: TriviaPageProps) {
       const result: CheckedAnswer[] = await response.json();
       setCheckedAnswers(result);
     } catch (error) {
-      console.error("Error fetching data:", error);
+      console.error("Error checking answers:", error);
     } finally {
       setIsLoading(false);
     }
-  }, [selectedAnswers]);
+  }, [quizId, selectedAnswers]);
 
   const getResultForQuestion = (question: string) => {
     return checkedAnswers.find((q) => q.question === question);
@@ -52,7 +59,6 @@ function TriviaPage({ questions }: TriviaPageProps) {
     return selectedAnswers.find((q) => q.question === question)?.answer;
   };
 
-  
   return (
     <div>
       {questions.map((question, index) => {

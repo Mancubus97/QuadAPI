@@ -15,10 +15,13 @@ public class TriviaController(ITriviaControllerService service) : Controller
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    private async Task<IResult> GetQuestions([FromQuery] int amount)
+    public async Task<IResult> GetQuestions([FromQuery] int amount)
         => Results.Ok(await service.GetQuestions(amount));
 
     [HttpPost("checkanswers")]
-    private async Task<IResult> CheckAnswers([FromBody] List<AnswerUserRequest> requests)
-    => Results.Ok(await service.CheckAnswers(requests));
+    public async Task<IResult> CheckAnswers([FromBody] CheckAnswersRequest request)
+    {
+        var result = await service.CheckAnswers(request.QuizId, request.Answers);
+        return Results.Ok(result);
+    }
 }
