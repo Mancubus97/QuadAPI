@@ -46,6 +46,7 @@ function App() {
         <div>Loading...</div>
       ) : (
         <div>
+          You have 30 minutes to answer the questions. Good luck! <br/><br/>
           Set Question Amount:
           <input
           type="number"

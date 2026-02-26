@@ -48,7 +48,7 @@ namespace QuadAPI.Services
 
             foreach (OpentdbResult result in results)
             {
-                answerDictionary[result.Question] = result.CorrectAnswer;
+                answerDictionary[WebUtility.HtmlDecode(result.Question)] = WebUtility.HtmlDecode(result.CorrectAnswer);
 
                 List<string> answers = new List<string>();
                 answers.Add(result.CorrectAnswer);
@@ -59,7 +59,7 @@ namespace QuadAPI.Services
                 while (answers.Count > 0)
                 {
                     int index = random.Next(answers.Count);
-                    answersShuffled.Add(answers[index]);
+                    answersShuffled.Add(WebUtility.HtmlDecode(answers[index]));
                     answers.RemoveAt(index);
                 }
 
