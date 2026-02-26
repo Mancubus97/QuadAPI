@@ -1,6 +1,7 @@
-﻿using QuadAPI.Models;
+﻿using Microsoft.Extensions.Caching.Memory;
+using QuadAPI.Models;
+using System.Net;
 using System.Text.Json;
-using Microsoft.Extensions.Caching.Memory;
 
 namespace QuadAPI.Services
 {
@@ -65,7 +66,7 @@ namespace QuadAPI.Services
                 res.Add(new QuestionsResponse
                 {
                     QuizId = quizId,
-                    Question = result.Question,
+                    Question = WebUtility.HtmlDecode(result.Question),
                     Category = result.Category,
                     Difficulty = result.Difficulty,
                     Type = result.Type,
@@ -73,7 +74,7 @@ namespace QuadAPI.Services
                 });
             }
 
-            cache.Set(quizId, answerDictionary, TimeSpan.FromMinutes(10));
+            cache.Set(quizId, answerDictionary, TimeSpan.FromMinutes(60));
 
             return res;
         }

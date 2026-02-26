@@ -8,7 +8,7 @@ namespace QuadAPI.Controllers;
 
 [Route("api")]
 [ApiController]
-public class TriviaController(ITriviaControllerService service) : Controller
+public class TriviaController(ITriviaControllerService service) : ControllerBase
 {
     // GET: api/questions?amount=10
     [HttpGet("questions")]

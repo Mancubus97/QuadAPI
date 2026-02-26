@@ -28,9 +28,7 @@ function App() {
       const result = await response.json();
 
       setQuestions(result);
-
       
-      // Grab quizId from first question
       if (result.length > 0) {
         setQuizId(result[0].quizId);
       }

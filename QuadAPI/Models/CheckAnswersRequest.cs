@@ -4,6 +4,6 @@
     {
         public string QuizId { get; set; } = string.Empty;
 
-        public List<UserAnswer> Answers { get; set; } = new();
+        public List<UserAnswer> Answers { get; set; } = [];
     }
 }
